@@ -1,9 +1,9 @@
 /**
- * jQuery native scrolling with custom stylable scroll-bar
+ * jQuery field with with stylable range slider
  */
 
 var $ = window.jQuery || require('jquery'),
-	pluginName = 'scroll',
+	pluginName = 'fieldRange',
 	defaults = { };
 
 function plugin(options) {

@@ -3,7 +3,7 @@
  */
 
 var $ = window.jQuery || require('jquery'),
-	pluginName = 'scroll',
+	pluginName = 'slider',
 	defaults = { };
 
 function plugin(options) {
