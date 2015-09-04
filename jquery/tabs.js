@@ -65,6 +65,8 @@ function plugin(options) {
 			anchors.filter('[href="' + location.hash + '"]').click();
 		});
 	});
+
+	return this;
 }
 
 $.fn[pluginName] = plugin;

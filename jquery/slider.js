@@ -8,6 +8,8 @@ var $ = window.jQuery || require('jquery'),
 
 function plugin(options) {
 	options = $.extend({}, defaults, options);
+
+	return this;
 }
 
 $.fn[pluginName] = plugin;

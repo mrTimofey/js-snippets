@@ -11,7 +11,8 @@ var $ = window.jQuery || require('jquery'),
 		bar: function(h) { return $('<div></div>').addClass('scroll-bar'); },
 		wrapperClass: 'scroll-content',
 		scrollableClass: 'scroll-scrollable',
-		hiddenClass: 'hidden'
+		hiddenClass: 'hidden',
+		ignoreTouch: true
 	},
 	sysScrollbarSize = 0;
 
@@ -60,6 +61,9 @@ var $doc = $(document),
 
 function plugin(options) {
 	options = $.extend({}, defaults, options);
+	if (options.ignoreTouch &&
+		(('ontouchstart' in window) || (navigator.MaxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)))
+			return this;
 
 	this.each(function(i, el) {
 		el = $(el);
@@ -214,6 +218,8 @@ function plugin(options) {
 		containerSizeChanged();
 		contentSizeChanged();
 	});
+
+	return this;
 }
 
 $.fn[pluginName] = plugin;
