@@ -17,12 +17,22 @@ var $ = window.jQuery || require('jquery'),
 		hash: true
 	};
 
+// sets hash without any effect to page scroll
+function setHash(v) {
+	v = v.substr(1);
+	var el = document.getElementById(v);
+	el.removeAttribute('id');
+	location.hash = v;
+	el.setAttribute('id', v);
+}
+
 function plugin(options) {
 	options = $.extend({}, defaults, options);
 
 	var curTabCl = options.currentTabClass || options.currentClass,
 		curAncCl = options.currentAnchorClass || options.currentClass,
-		win = $(window);
+		win = $(window),
+		initialized = false;
 
 	this.each(function(i, el) {
 		el = $(el);
@@ -45,15 +55,19 @@ function plugin(options) {
 			currentAnchor.removeClass(curAncCl);
 			currentAnchor = anchor.addClass(curAncCl);
 
-			if (options.hash) {
-				location.hash = anchor.attr('href');
+			// do not change hash if there is no hash on page load
+			if (options.hash && initialized) {
+				setHash(anchor.attr('href'));
 				tabChanged = true;
 			}
 		});
 
 		// set initial anchor and tab
+		// from hash
 		if (options.hash && location.hash) currentAnchor = anchors.filter('[href="' + location.hash + '"]');
+		// from tab with initial cureent class set
 		if (!currentAnchor || currentAnchor.length === 0) currentAnchor = tabs.filter('.' + curAncCl);
+		// or just first element
 		if (currentAnchor.length === 0) currentAnchor = anchors.eq(0).addClass(curAncCl);
 		currentAnchor.click();
 
@@ -64,6 +78,8 @@ function plugin(options) {
 			}
 			anchors.filter('[href="' + location.hash + '"]').click();
 		});
+
+		initialized = true;
 	});
 
 	return this;
