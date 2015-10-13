@@ -2,7 +2,7 @@
  * jQuery field with with stylable range slider
  */
 
-var $ = window.jQuery || require('jquery'),
+var $ = window.jQuery,
 	pluginName = 'fieldRange',
 	defaults = {
 		upgradeClass: 'field-range-upgraded',

@@ -2,7 +2,7 @@
  * jQuery tabs plugin
  */
 
-var $ = window.jQuery || require('jquery'),
+var $ = window.jQuery,
 	pluginName = 'tabs',
 	defaults = {
 		anchors: 'nav a',

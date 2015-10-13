@@ -2,7 +2,7 @@
  * jQuery slider
  */
 
-var $ = window.jQuery || require('jquery'),
+var $ = window.jQuery,
 	pluginName = 'slider',
 	defaults = {
 		controlsEnabled: true,

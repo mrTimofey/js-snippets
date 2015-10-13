@@ -2,7 +2,7 @@
  * jQuery native scrolling with custom stylable scroll-bar
  */
 
-var $ = window.jQuery || require('jquery'),
+var $ = window.jQuery,
 	pluginName = 'scroll',
 	defaults = {
 		// create DOM element for scroll control (function or jQuery object)
