@@ -1,5 +1,5 @@
 /**
- * jQuery field with with stylable range slider
+ * jQuery field with stylable range slider
  */
 
 var $ = window.jQuery,
