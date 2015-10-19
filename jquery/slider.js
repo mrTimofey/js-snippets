@@ -6,30 +6,41 @@ var $ = window.jQuery,
 	pluginName = 'slider',
 	defaults = {
 		controlsEnabled: true,
-		controls: function(el) {
-			var container = $('<div></div>').addClass('slider-controls').appendTo(el);
+		controls: function(containerCl, prevCl, nextCl, el) {
+			var container = $('<div></div>').addClass(containerCl).appendTo(el);
 			return [
-				$('<div></div>').addClass('slider-control slider-control-prev').append('<span></span>').appendTo(container),
-				$('<div></div>').addClass('slider-control slider-control-next').append('<span></span>').appendTo(container)
+				$('<div></div>').addClass(prevCl).append('<span></span>').appendTo(container),
+				$('<div></div>').addClass(nextCl).append('<span></span>').appendTo(container)
 			];
 		},
+		// return to the first slide when triggering next while current slide is the last and vice versa
 		controlsCircleNav: true,
 		controlDisabledClass: 'disabled',
+		// classes
+		controlsContainerClass: 'slider-controls',
+		controlPrevClass: 'slider-control slider-control-prev',
+		controlNextClass: 'slider-control slider-control-next',
 
 		pagerEnabled: true,
-		pagerContainer: function(el) { return $('<div></div>').addClass('slider-pager').appendTo(el); },
-		pagerItem: function(i) { return $('<i></i>').addClass('slider-pager-item').html(i + 1); },
+		pagerContainer: function(cl, el) { return $('<div></div>').addClass(cl).appendTo(el); },
+		pagerItem: function(i, cl, el) { return $('<i></i>').addClass(cl).html(i + 1); },
 		// from options.currentClass by default
 		pagerCurrentClass: false,
+		pagerContainerClass: 'slider-pager',
+		pagerItemClass: 'slider-pager-item',
 
 		displayEnabled: true,
-		display: function(el, count) {
-			var container = $('<div></div>').addClass('slider-display'),
-				current = $('<span></span>').addClass('slider-display-current'),
-				total = $('<span></span>').addClass('slider-display-total');
+		// creates display DOM, but returns only current value DOM object
+		display: function(containerCl, currentCl, totalCl, count, el) {
+			var container = $('<div></div>').addClass(containerCl),
+				current = $('<span></span>').addClass(currentCl),
+				total = $('<span></span>').addClass(totalCl);
 			container.append(current).append(' / ').append(total.html(count)).appendTo(el);
 			return current;
 		},
+		displayContainerClass: 'slider-display',
+		displayCurrentClass: 'slider-display-current',
+		displayTotalClass: 'slider-display-total',
 
 		slides: '.slide',
 		// from options.currentClass by default
@@ -115,7 +126,7 @@ function plugin(options) {
 		}
 
 		if (options.controlsEnabled) (function() {
-			controls = value(options.controls, [el]);
+			controls = value(options.controls, [options.controlsContainerClass, options.controlPrevClass, options.controlNextClass, el]);
 			controls[0].click(function(e) {
 				e.preventDefault();
 				setSlide('prev');
@@ -133,21 +144,21 @@ function plugin(options) {
 				setSlide($(this).index());
 			}
 
-			pagerContainer = value(options.pagerContainer, [el]);
+			pagerContainer = value(options.pagerContainer, [options.pagerContainerClass, el]);
 			pagerItems = [];
 			for (var i = 0; i < slides.length; ++i) {
-				pagerItems.push(options.pagerItem(i));
+				pagerItems.push(options.pagerItem(i, options.pagerItemClass, el));
 				pagerItems[i].click(pageClick);
 				pagerContainer.append(pagerItems[i]);
 			}
 		})();
 
 		if (options.displayEnabled) (function() {
-			display = value(options.display, [el, slides.length]);
+			display = value(options.display, [options.displayContainerClass, options.displayCurrentClass, options.displayTotalClass, slides.length, el]);
 		})();
 
 		(function() {
-			var current = slides.filter('.current');
+			var current = slides.filter(sCurCl);
 			if (current.length) return setSlide(current.index());
 			return setSlide(0);
 		})();
