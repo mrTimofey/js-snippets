@@ -5,7 +5,6 @@
 var $ = window.jQuery,
 	pluginName = 'fieldRange',
 	defaults = {
-		upgradeClass: 'field-range-upgraded',
 		fixedClass: 'field-range-control-fixed',
 
 		// selectors
@@ -27,11 +26,18 @@ var $ = window.jQuery,
 		rightFixed: function(rightInput) { return rightInput.prop('readonly') || rightInput.prop('disabled'); },
 
 		// DOM elements creating functions
-		domSlider: function(el) { return $('<div></div>').addClass('field-range-slider'); },
-		domControls: function(el) { return [
-			$('<div></div>').addClass('field-range-control field-range-control-left'),
-			$('<div></div>').addClass('field-range-control field-range-control-right')];},
-		domBetween: function(el) { return $('<div></div>').addClass('field-range-between'); }
+		domSlider: function(cl, el) { return $('<div></div>').addClass(cl); },
+		domControls: function(lCl, rCl, el) { return [
+			$('<div></div>').addClass(lCl),
+			$('<div></div>').addClass(rCl)];},
+		domBetween: function(cl, el) { return $('<div></div>').addClass(cl); },
+
+		containerClass: 'field-range-slider',
+		controlLeftClass: 'field-range-control field-range-control-left',
+		controlRightClass: 'field-range-control field-range-control-right',
+		betweenClass: 'field-range-between',
+
+		processedClass: 'js-processed'
 	},
 	$doc = $(document);
 
@@ -48,9 +54,9 @@ function plugin(options) {
 		el = $(el);
 
 		var inputs = [el.find(options.inputLeft), el.find(options.inputRight)],
-			container = value(options.domSlider, [el]),
-			controls = value(options.domControls, [el]),
-			between = value(options.domBetween, [el]),
+			container = value(options.domSlider, [options.containerClass, el]),
+			controls = value(options.domControls, [options.controlLeftClass, options.controlRightClass, el]),
+			between = value(options.domBetween, [options.betweenClass, el]),
 			step = parseFloat(value(options.step, [el, inputs])),
 			min = parseFloat(value(options.min, [el, inputs])),
 			max = parseFloat(value(options.max, [el, inputs])),
@@ -146,7 +152,7 @@ function plugin(options) {
 		controls[1].on('mousedown touchstart', startDrag(1));
 		controls[0].on('mousedown touchstart', startDrag(0));
 
-		el.addClass(options.upgradeClass);
+		el.addClass(options.processedClass);
 	});
 
 	return this;
