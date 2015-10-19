@@ -6,11 +6,19 @@ var $ = window.jQuery,
 	pluginName = 'scroll',
 	defaults = {
 		// create DOM element for scroll control (function or jQuery object)
-		control: function(h) { return $('<div></div>').addClass('scroll-control' + (h ? ' horizontal' : '')); },
+		control: function(cl, hCl, h) { return $('<div></div>').addClass(cl + (h ? (' ' + hCl) : '')); },
 		// create DOM element for scroll bar (function or jQuery object)
-		bar: function(h) { return $('<div></div>').addClass('scroll-bar'); },
+		bar: function(cl, h) { return $('<div></div>').addClass(cl); },
+
+		// optionally control and bar for horizontal scrolling, same to vertical by default
+		hControl: false,
+		hBar: false,
+
 		wrapperClass: 'scroll-content',
 		scrollableClass: 'scroll-scrollable',
+		controlClass: 'scroll-control',
+		horizontalClass: 'horizontal',
+		barClass: 'scroll-bar',
 		hiddenClass: 'hidden',
 		ignoreTouch: true
 	},
@@ -59,20 +67,29 @@ var $doc = $(document),
 		overflow: 'hidden'
 	};
 
+// returns value itself or function call result if value is a function
+function value(what, params) {
+	if (typeof what === 'function') return what.apply(null, params);
+	return what;
+}
+
 function plugin(options) {
 	options = $.extend({}, defaults, options);
 	if (options.ignoreTouch &&
 		(('ontouchstart' in window) || (navigator.MaxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)))
 			return this;
 
+	if (!options.hControl) options.hControl = options.control;
+	if (!options.hBar) options.hBar = options.bar;
+
 	this.each(function(i, el) {
 		el = $(el);
 		if (el[0] === window) el = $(document.body);
 
-		var control = typeof options.control === 'function' ? options.control() : options.control,
-			bar = typeof options.bar === 'function' ? options.bar() : options.bar,
-			hControl = typeof options.control === 'function' ? options.control(true) : options.control,
-			hBar = typeof options.bar === 'function' ? options.bar(true) : options.bar,
+		var control = value(options.control, [options.controlClass, options.horizontalClass, false]),
+			bar = value(options.bar, [options.barClass, false]),
+			hControl = value(options.hControl, [options.controlClass, options.horizontalClass, true]),
+			hBar = value(options.hBar, [options.barClass, true]),
 			content = $('<div></div>').addClass(options.wrapperClass).css(contentCSS),
 			scrollable = $('<div></div>').addClass(options.scrollableClass).css(scrollableCSS),
 			// hack to observe element resize event (only window triggers it so create an iframe with that window)
