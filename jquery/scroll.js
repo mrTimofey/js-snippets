@@ -3,7 +3,7 @@
  */
 
 var $ = window.jQuery,
-	pluginName = 'scroll',
+	pluginName = 'customScroll',
 	defaults = {
 		// create DOM element for scroll control (function or jQuery object)
 		control: function(cl, hCl, h) { return $('<div></div>').addClass(cl + (h ? (' ' + hCl) : '')); },
