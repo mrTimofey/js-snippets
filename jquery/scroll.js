@@ -77,7 +77,7 @@ function plugin(options) {
 	options = $.extend({}, defaults, options);
 	if (options.ignoreTouch &&
 		(('ontouchstart' in window) || (navigator.MaxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)))
-		return this;
+		return this.css('overflow', 'auto');
 
 	if (!options.hControl) options.hControl = options.control;
 	if (!options.hBar) options.hBar = options.bar;
