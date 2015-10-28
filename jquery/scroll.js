@@ -196,12 +196,12 @@ function plugin(options) {
 			e.preventDefault();
 			var pos;
 			if (h) {
-				pos = e.clientX - hControl.offset().left - barw / 2;
+				pos = e.pageX - hControl.offset().left - barw / 2;
 				if (pos <= 0) return scrollable.scrollLeft(0);
 				scrollable.scrollLeft(pos * (cw - sw) / (ctrlw - barw));
 			}
 			else {
-				pos = e.clientY - control.offset().top - barh / 2;
+				pos = e.pageY - control.offset().top - barh / 2;
 				if (pos <= 0) return scrollable.scrollTop(0);
 				scrollable.scrollTop(pos * (ch - sh) / (ctrlh - barh));
 			}
