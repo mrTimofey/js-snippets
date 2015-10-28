@@ -17,9 +17,31 @@ define-grid($width = 960px, $gap = 30px, $cols = 12, $double-edge = false,
 		display inline-block
 		float left
 		margin 0 ($gap / 2)
+
 		.{$grid-class}
 			width auto
 			padding 0
+			margin 0 (-($gap / 2))
+	for i in 1..$cols
+		.{$cell-class}{i}
+			width ($width * i / $cols - $gap)
+		.{$offset-class}{i}
+			margin-left ($width * i / $cols + $gap / 2)
+
+// Define this grid if define-grid is called before. For example, in media queries to define alternative
+// smaller/bigger grid
+define-other-grid($width = 480px, $gap = 30px, $cols = 6, $double-edge = false,
+		$grid-class = 'grid', $cell-class = 'cell-small-', $offset-class = 'offset-small-')
+	.{$grid-class}
+		if $double-edge
+			padding 0 ($gap / 2)
+		width $width
+	$cell-class-contains = '[class*=" ' + $cell-class + '"]'
+	$cell-class-starts = '[class^="' + $cell-class + '"]'
+
+	{$cell-class-contains}, {$cell-class-starts}
+		margin 0 ($gap / 2)
+		.{$grid-class}
 			margin 0 (-($gap / 2))
 	for i in 1..$cols
 		.{$cell-class}{i}
