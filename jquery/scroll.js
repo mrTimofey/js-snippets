@@ -77,7 +77,7 @@ function plugin(options) {
 	options = $.extend({}, defaults, options);
 	if (options.ignoreTouch &&
 		(('ontouchstart' in window) || (navigator.MaxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)))
-			return this;
+		return this;
 
 	if (!options.hControl) options.hControl = options.control;
 	if (!options.hBar) options.hBar = options.bar;
@@ -92,7 +92,7 @@ function plugin(options) {
 			hBar = value(options.hBar, [options.barClass, true]),
 			content = $('<div></div>').addClass(options.wrapperClass).css(contentCSS),
 			scrollable = $('<div></div>').addClass(options.scrollableClass).css(scrollableCSS),
-			// hack to observe element resize event (only window triggers it so create an iframe with that window)
+		// hack to observe element resize event (only window triggers it so create an iframe with that window)
 			contentSizeObserver = $('<iframe />').css(observerCSS),
 			containerSizeObserver = $('<iframe />').css(observerCSS),
 			ch, sh, ctrlh, barh, cw, sw, ctrlw, barw, pos = { left: 0, top: 0},
@@ -147,15 +147,12 @@ function plugin(options) {
 		}
 
 		function contentSizeChanged() {
+			content.css({ width: 'auto', height: 'auto' });
 			cw = content.width(); ch = content.height();
-			content.css({
-				width: content.prop('scrollWidth'),
-				height: content.prop('scrollHeight')
-			})
-			adjustControl();
 		}
 
 		function containerSizeChanged() {
+			scrollable.css({ width: 'auto', height: 'auto' });
 			sw = el.width(); sh = el.height();
 			scrollable.css({
 				width: sw,
@@ -163,11 +160,8 @@ function plugin(options) {
 			});
 			content.css({
 				minWidth: sw,
-				minHeight: sh - sysScrollbarSize,
-				width: content.prop('scrollWidth'),
-				height: content.prop('scrollHeight')
+				minHeight: sh - sysScrollbarSize
 			});
-			adjustControl();
 		}
 
 		function startDrag(e, h) {
@@ -207,8 +201,25 @@ function plugin(options) {
 			}
 		}
 
-		contentSizeObserver[0].contentWindow.addEventListener('resize', contentSizeChanged);
-		containerSizeObserver[0].contentWindow.addEventListener('resize', containerSizeChanged);
+		contentSizeObserver[0].contentWindow.addEventListener('resize', function() {
+			var oldScrollTop = scrollable.scrollTop(),
+				oldScrollLeft = scrollable.scrollLeft();
+			contentSizeChanged();
+			containerSizeChanged();
+			scrollable.scrollTop(oldScrollTop);
+			scrollable.scrollLeft(oldScrollLeft);
+			adjustControl();
+
+		});
+		containerSizeObserver[0].contentWindow.addEventListener('resize', function() {
+			var oldScrollTop = scrollable.scrollTop(),
+				oldScrollLeft = scrollable.scrollLeft();
+			containerSizeChanged();
+			contentSizeChanged();
+			scrollable.scrollTop(oldScrollTop);
+			scrollable.scrollLeft(oldScrollLeft);
+			adjustControl();
+		});
 
 		scrollable.on('scroll', function(e) {
 			var top = scrollable.scrollTop(),
@@ -234,6 +245,7 @@ function plugin(options) {
 
 		containerSizeChanged();
 		contentSizeChanged();
+		adjustControl();
 	});
 
 	return this;
