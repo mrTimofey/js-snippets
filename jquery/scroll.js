@@ -56,7 +56,7 @@ var $doc = $(document),
 		margin: 0
 	},
 	scrollableCSS = {
-		overflow: 'auto',
+		overflow: 'scroll',
 		marginRight: -sysScrollbarSize,
 		marginBottom: -sysScrollbarSize,
 		paddingRight: sysScrollbarSize,
@@ -64,7 +64,8 @@ var $doc = $(document),
 	},
 	contentCSS = {
 		position: 'relative',
-		overflow: 'hidden'
+		overflow: 'visible',
+		marginBottom: -sysScrollbarSize
 	};
 
 // returns value itself or function call result if value is a function
@@ -122,7 +123,9 @@ function plugin(options) {
 				bar.css('height', barh);
 				adjustBar();
 			}
-			else control.addClass(options.hiddenClass);
+			else {
+				control.addClass(options.hiddenClass);
+			}
 
 			if (cw > sw) {
 				hControl.removeClass(options.hiddenClass);
@@ -131,7 +134,9 @@ function plugin(options) {
 				hBar.css('width', barw);
 				adjustBar(true);
 			}
-			else hControl.addClass(options.hiddenClass);
+			else {
+				hControl.addClass(options.hiddenClass);
+			}
 		}
 
 		function adjustBar(h) {
@@ -147,7 +152,7 @@ function plugin(options) {
 		}
 
 		function contentSizeChanged() {
-			content.css({ width: 'auto', height: 'auto', overflow: 'hidden' });
+			content.css({ width: 'auto', height: 'auto' });
 			cw = content.prop('scrollWidth'); ch = content.prop('scrollHeight');
 		}
 
@@ -162,7 +167,6 @@ function plugin(options) {
 				minWidth: sw,
 				minHeight: sh
 			});
-			content.css('overflow', 'visible');
 		}
 
 		function startDrag(e, h) {
