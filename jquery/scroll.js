@@ -147,8 +147,8 @@ function plugin(options) {
 		}
 
 		function contentSizeChanged() {
-			content.css({ width: 'auto', height: 'auto' });
-			cw = content.width(); ch = content.height();
+			content.css({ width: 'auto', height: 'auto', overflow: 'hidden' });
+			cw = content.prop('scrollWidth'); ch = content.prop('scrollHeight');
 		}
 
 		function containerSizeChanged() {
@@ -160,8 +160,9 @@ function plugin(options) {
 			});
 			content.css({
 				minWidth: sw,
-				minHeight: sh - sysScrollbarSize
+				minHeight: sh
 			});
+			content.css('overflow', 'visible');
 		}
 
 		function startDrag(e, h) {
@@ -201,7 +202,7 @@ function plugin(options) {
 			}
 		}
 
-		contentSizeObserver[0].contentWindow.addEventListener('resize', function() {
+		function onResize() {
 			var oldScrollTop = scrollable.scrollTop(),
 				oldScrollLeft = scrollable.scrollLeft();
 			contentSizeChanged();
@@ -209,17 +210,7 @@ function plugin(options) {
 			scrollable.scrollTop(oldScrollTop);
 			scrollable.scrollLeft(oldScrollLeft);
 			adjustControl();
-
-		});
-		containerSizeObserver[0].contentWindow.addEventListener('resize', function() {
-			var oldScrollTop = scrollable.scrollTop(),
-				oldScrollLeft = scrollable.scrollLeft();
-			containerSizeChanged();
-			contentSizeChanged();
-			scrollable.scrollTop(oldScrollTop);
-			scrollable.scrollLeft(oldScrollLeft);
-			adjustControl();
-		});
+		}
 
 		scrollable.on('scroll', function(e) {
 			var top = scrollable.scrollTop(),
@@ -235,17 +226,20 @@ function plugin(options) {
 			}
 		});
 
-		bar.on('mousedown touchstart', function(e) { e.preventDefault(); startDrag(e); });
-		hBar.on('mousedown touchstart', function(e) { e.preventDefault(); startDrag(e, true); });
-		bar.on('click', function(e) {e.preventDefault(); e.stopPropagation(); });
-		hBar.on('click', function(e) {e.preventDefault(); e.stopPropagation(); });
-
 		control.on('click', function(e) { e.preventDefault(); jump(e); });
 		hControl.on('click', function(e) { e.preventDefault(); jump(e, true); });
 
 		containerSizeChanged();
 		contentSizeChanged();
 		adjustControl();
+
+		bar.on('mousedown touchstart', function(e) { e.preventDefault(); startDrag(e); });
+		hBar.on('mousedown touchstart', function(e) { e.preventDefault(); startDrag(e, true); });
+		bar.on('click', function(e) {e.preventDefault(); e.stopPropagation(); });
+		hBar.on('click', function(e) {e.preventDefault(); e.stopPropagation(); });
+
+		contentSizeObserver[0].contentWindow.addEventListener('resize', onResize);
+		containerSizeObserver[0].contentWindow.addEventListener('resize', onResize);
 	});
 
 	return this;
