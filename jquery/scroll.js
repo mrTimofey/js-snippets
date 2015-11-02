@@ -157,7 +157,7 @@ function plugin(options) {
 		}
 
 		function containerSizeChanged() {
-			scrollable.css({ width: 'auto', height: 'auto' });
+			scrollable.css({ width: 'auto', height: 'auto', overflow: 'scroll' });
 			sw = el.width(); sh = el.height();
 			scrollable.css({
 				width: sw,
@@ -167,6 +167,7 @@ function plugin(options) {
 				minWidth: sw,
 				minHeight: sh
 			});
+			if (ch <= sh && cw <= sw) scrollable.css('overflow', 'hidden').scrollTop(0).scrollLeft(0);
 		}
 
 		function startDrag(e, h) {
