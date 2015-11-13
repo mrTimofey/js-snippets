@@ -76,8 +76,12 @@ function value(what, params) {
 
 function plugin(options) {
 	options = $.extend({}, defaults, options);
-	if (options.ignoreTouch &&
-		(('ontouchstart' in window) || (navigator.MaxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)))
+	if (
+			options.ignoreTouch &&
+			(('ontouchstart' in window) || (navigator.MaxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0))
+			||
+			options.ignoreScrollOver && sysScrollbarSize === 0
+	)
 		return this.css('overflow', 'auto');
 
 	if (!options.hControl) options.hControl = options.control;
