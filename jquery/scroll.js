@@ -20,7 +20,8 @@ var $ = window.jQuery,
 		horizontalClass: 'horizontal',
 		barClass: 'scroll-bar',
 		hiddenClass: 'hidden',
-		ignoreTouch: true
+		ignoreTouch: true,
+		ignoreScrollOver: true
 	},
 	sysScrollbarSize = 0;
 
