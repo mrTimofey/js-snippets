@@ -3,20 +3,21 @@
  */
 
 var $ = window.jQuery,
-	pluginName = 'placeholder',
-	defaults = {
-		inputSelector: 'input, textarea, select',
-		labelSelector: '.field-label',
-		processedClass: 'js-processed'
-	};
+		pluginName = 'placeholder',
+		defaults = {
+			inputSelector: 'input, textarea, select',
+			labelSelector: '.field-label',
+			processedClass: 'js-processed',
+			hasValueClass: 'has-value'
+		};
 
 function plugin(options) {
 	options = $.extend({}, defaults, options);
 
 	this.each(function(i, el) {
 		var label = $(el),
-			input = label.find(options.inputSelector),
-			ph = label.find(options.labelSelector);
+				input = label.find(options.inputSelector),
+				ph = label.find(options.labelSelector);
 
 		// set placeholder to input for touch devices and do nothing more
 		if ('ontouchstart' in document.documentElement) {
@@ -27,12 +28,10 @@ function plugin(options) {
 		else {
 			input.on('keydown change', function (e) {
 				setTimeout(function () {
-					if (input.val()) ph.hide();
-					else ph.show();
+					label.toggleClass(options.hasValueClass, input.val());
 				});
 			});
-
-			if (input.val()) ph.hide();
+			if (input.val()) label.addClass(options.hasValueClass);
 			label.addClass(options.processedClass);
 		}
 	});
