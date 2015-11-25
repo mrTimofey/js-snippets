@@ -28,7 +28,7 @@ function plugin(options) {
 		else {
 			input.on('keydown change', function (e) {
 				setTimeout(function () {
-					label.toggleClass(options.hasValueClass, input.val());
+					label.toggleClass(options.hasValueClass, !!input.val());
 				});
 			});
 			if (input.val()) label.addClass(options.hasValueClass);
