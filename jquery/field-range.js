@@ -110,6 +110,7 @@ function plugin(options) {
 
 			return function(e) {
 				e.preventDefault();
+				e.stopPropagation();
 				if (fix) return;
 				function moving(e) {
 					e.preventDefault();
@@ -117,7 +118,7 @@ function plugin(options) {
 
 					if ((dirty - stepWidth / 2) < 0) return input.val(min).change();
 					if ((dirty + stepWidth / 2) > sliderWidth) return input.val(max).change();
-					input.val(Math.round(dirty / stepWidth) * step + min).change()
+					input.val(Math.round(dirty / stepWidth) * step + min).change();
 				}
 
 				function stop(e) {
@@ -137,7 +138,7 @@ function plugin(options) {
 					.append(controls[0])
 					.append(between)
 					.append(controls[1])
-		);
+			);
 
 		if (fixed[0]) controls[0].addClass(options.fixedClass);
 		if (fixed[1]) controls[1].addClass(options.fixedClass);
@@ -146,11 +147,24 @@ function plugin(options) {
 
 		updateWidth();
 
+		container.on('click', function(e) {
+			e.preventDefault();
+
+			var pos = getX(e) - container.offset().left,
+				leftCtrlPos = between.position().left,
+				rightCtrlPos = leftCtrlPos + between.width(),
+				nearest = pos < leftCtrlPos + (rightCtrlPos - leftCtrlPos) / 2 ? inputs[0] : inputs[1];
+
+			if ((pos - stepWidth / 2) < 0) return nearest.val(min).change();
+			if ((pos + stepWidth / 2) > sliderWidth) return nearest.val(max).change();
+			nearest.val(Math.round(pos / stepWidth) * step + min).change();
+		});
+
 		inputs[1].on('change keyup', inputChanged(1)).change();
 		inputs[0].on('change keyup', inputChanged(0)).change();
 
-		controls[1].on('mousedown touchstart', startDrag(1));
-		controls[0].on('mousedown touchstart', startDrag(0));
+		controls[1].on('mousedown touchstart', startDrag(1)).on('click', function(e) { e.stopPropagation(); e.preventDefault(); });
+		controls[0].on('mousedown touchstart', startDrag(0)).on('click', function(e) { e.stopPropagation(); e.preventDefault(); });
 
 		el.addClass(options.processedClass);
 	});
