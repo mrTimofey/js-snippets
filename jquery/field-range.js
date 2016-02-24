@@ -56,7 +56,9 @@ function plugin(options) {
 		var inputs = [el.find(options.inputLeft), el.find(options.inputRight)],
 			container = value(options.domSlider, [options.containerClass, el]),
 			controls = value(options.domControls, [options.controlLeftClass, options.controlRightClass, el]),
+			controlsCSS = [{}, {}],
 			between = value(options.domBetween, [options.betweenClass, el]),
+			betweenCSS = {},
 			step = parseFloat(value(options.step, [el, inputs])),
 			min = parseFloat(value(options.min, [el, inputs])),
 			max = parseFloat(value(options.max, [el, inputs])),
@@ -81,10 +83,11 @@ function plugin(options) {
 			if (left > right)
 				return lastChanged > 0 ? inputs[0].val(right).change() : inputs[1].val(left).change();
 
-			between.css({
-				left: controls[0].position().left,
-				width: controls[1].position().left - controls[0].position().left
-			});
+			betweenCSS = {
+				left: controlsCSS[0].left,
+				width: controlsCSS[1].left - controlsCSS[0].left
+			};
+			between.css(betweenCSS);
 		}
 
 		function inputChanged(i) {
@@ -94,9 +97,12 @@ function plugin(options) {
 				var val = getValue(i);
 				if (!isFinite(val)) return;
 
-				if (val >= max) control.css('left', sliderWidth);
-				else if (val <= min) control.css('left', 0);
-				else control.css('left', ((val - min) / (max - min)) * sliderWidth);
+				if (val >= max) controlsCSS[i].left = sliderWidth;
+				else if (val <= min) controlsCSS[i].left = 0;
+				else controlsCSS[i].left = ((val - min) / (max - min)) * sliderWidth;
+
+				control.css(controlsCSS[i]);
+
 				lastChanged = i;
 
 				adjustBetween();
@@ -151,8 +157,8 @@ function plugin(options) {
 			e.preventDefault();
 
 			var pos = getX(e) - container.offset().left,
-				leftCtrlPos = between.position().left,
-				rightCtrlPos = leftCtrlPos + between.width(),
+				leftCtrlPos = betweenCSS.left,
+				rightCtrlPos = leftCtrlPos + betweenCSS.width,
 				nearest = pos < leftCtrlPos + (rightCtrlPos - leftCtrlPos) / 2 ? inputs[0] : inputs[1];
 
 			if ((pos - stepWidth / 2) < 0) return nearest.val(min).change();
