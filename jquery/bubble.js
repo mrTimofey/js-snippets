@@ -47,7 +47,7 @@ function value(what, params) {
 
 function plugin(options) {
 	options = $.extend({}, defaults, options);
-	$(this).each(function(i, el) {
+	return this.each(function(i, el) {
 		el = $(el);
 		var bubble,
 			mouseOnBubble = false,
