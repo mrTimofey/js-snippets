@@ -36,6 +36,7 @@ var $ = window.jQuery,
 		controlLeftClass: 'field-range-control field-range-control-left',
 		controlRightClass: 'field-range-control field-range-control-right',
 		betweenClass: 'field-range-between',
+		movingClass: 'moving',
 
 		processedClass: 'js-processed'
 	},
@@ -118,6 +119,8 @@ function plugin(options) {
 				e.preventDefault();
 				e.stopPropagation();
 				if (fix) return;
+
+				container.addClass(options.movingClass);
 				function moving(e) {
 					e.preventDefault();
 					var dirty = getX(e) - container.offset().left;
@@ -131,6 +134,7 @@ function plugin(options) {
 					e.preventDefault();
 					$doc.off('mousemove touchmove', moving);
 					$doc.off('mouseup touchend', stop);
+					container.removeClass(options.movingClass);
 				}
 
 				$doc.on('mousemove touchmove', moving);

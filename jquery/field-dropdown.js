@@ -1,46 +1,51 @@
 /**
- * jQuery field with stylable range slider
+ * jQuery select based dropdown plugin
  */
 
 var $ = window.jQuery,
-	pluginName = 'fieldRange',
+	pluginName = 'fieldDropdown',
 	defaults = {
-		fixedClass: 'field-range-control-fixed',
+		wrapper: function(cl, multipleCl, el) {
+			var wrapper = $('<div></div>').addClass(cl);
+			if (el.prop('multiple')) wrapper.addClass(multipleCl);
+			return wrapper; },
+		selection: function(cl, wrapper) {
+			return $('<div></div>').addClass(cl).appendTo(wrapper); },
+		optionList: function(cl, wrapper) {
+			return $('<ul></ul>').addClass(cl).appendTo(wrapper); },
+		optionGroup: function(cl) {
+			return $('<li></li>').addClass(cl); },
+		optionGroupLabel: function(cl, text) {
+			return $('<span></span>').addClass(cl).html(text); },
+		option: function(cl, emptyCl, text, value) {
+			var option = $('<li></li>').addClass(cl).html(text);
+			if (!value) option.addClass(emptyCl);
+			return option; },
+		input: function(wrapper, el) {
+			return $('<input />').attr('type', 'hidden').attr('name', el.attr('name')).appendTo(wrapper); },
+		format: function(titles, values) {
+			var notEmpty = [];
+			if (values.length > 1) {
+				for (var i in values) if (values[i]) notEmpty.push(titles[i]);
+			}
+			else notEmpty = titles;
+			return notEmpty.join(', ');
+		},
 
-		// selectors
-		inputLeft: 'input:eq(0)',
-		inputRight: 'input:eq(1)',
+		showClass: 'show',
+		optionSelectedClass: 'selected',
 
-		// provide array of possible values if they are fixed
-		values: false,
-		// or provide step, max and min values
-		step: function(el, inputs) {
-			return el.data('step') || inputs[0].attr('step') || inputs[1].attr('step') || 1; },
-		min: function(el, inputs) {
-			return el.data('min') || inputs[0].attr('min') || inputs[1].attr('min') || 0; },
-		max: function(el, inputs) {
-			return el.data('max') || inputs[1].attr('max') || inputs[0].attr('max') || 100; },
-
-		// value can be fixed (readonly or disabled)
-		leftFixed: function(leftInput) { return leftInput.prop('readonly') || leftInput.prop('disabled'); },
-		rightFixed: function(rightInput) { return rightInput.prop('readonly') || rightInput.prop('disabled'); },
-
-		// DOM elements creating functions
-		domSlider: function(cl, el) { return $('<div></div>').addClass(cl); },
-		domControls: function(lCl, rCl, el) { return [
-			$('<div></div>').addClass(lCl),
-			$('<div></div>').addClass(rCl)];},
-		domBetween: function(cl, el) { return $('<div></div>').addClass(cl); },
-
-		containerClass: 'field-range-slider',
-		controlLeftClass: 'field-range-control field-range-control-left',
-		controlRightClass: 'field-range-control field-range-control-right',
-		betweenClass: 'field-range-between',
-		movingClass: 'moving',
-
-		processedClass: 'js-processed'
+		wrapperClass: 'dd-box',
+		multipleClass: 'dd-multiple',
+		selectionClass: 'dd-selection',
+		optionListClass: 'dd-option-list',
+		optionGroupClass: 'dd-option-group',
+		optionGroupLabelClass: 'dd-option-group-label',
+		optionEmptyClass: 'dd-novalue',
+		optionClass: 'dd-option',
 	},
-	$doc = $(document);
+	$doc = $(document),
+	dropdowns = [];
 
 // returns value itself or function call result if value is a function
 function value(what, params) {
@@ -48,139 +53,146 @@ function value(what, params) {
 	return what;
 }
 
+function closeAll() {
+	for (var i in dropdowns) {
+		dropdowns[i].close();
+	}
+	$doc.off('click', closeAll);
+}
+
+function Dropdown(el, options) {
+	select = $(el);
+
+	var wrapper = value(options.wrapper, [options.wrapperClass, options.multipleClass, select]),
+		selection = value(options.selection, [options.selectionClass, wrapper, select]),
+		optionList = value(options.optionList, [options.optionListClass, wrapper, select]),
+		multiple = select.prop('multiple'),
+		selectedOpts = $(),
+		opts = $(),
+		inputs = $();
+
+	(function() {
+		var groups = select.children('optgroup');
+
+		function createOption(i, el, list) {
+			el = $(el);
+			var val = el.val(),
+				opt = options.option(options.optionClass, options.optionEmptyClass, el.html(), val, i, select)
+					.data('value', val);
+			list.append(opt);
+			opts.push(opt[0]);
+			if (el.prop('selected')) selectedOpts.push(opt[0]);
+		}
+
+		if (groups.length) {
+			groups.each(function(i, el) {
+				el = $(el);
+				var group = options.optionGroup(options.optionGroupClass, select),
+					list = options.optionList(options.optionListClass, select);
+				group.append(options.optionGroupLabel(options.optionGroupLabelClass, el.attr('label'), select));
+				group.append(list);
+				optionList.append(group);
+				el.find('option').each(function(i, el) {
+					createOption(i, el, list);
+				});
+			});
+		}
+
+		select.children('option').each(function(i, el) {
+			createOption(i, el, optionList);
+		});
+	})();
+
+	opts.click(function(e) {
+		e.preventDefault();
+		if (multiple) e.stopPropagation();
+		var $this = $(this),
+			values = [],
+			titles = [];
+
+		if (multiple) {
+			$this.toggleClass(options.optionSelectedClass);
+			selectedOpts = opts.filter('.' + options.optionSelectedClass);
+			selectedOpts.each(function(i, el) {
+				el = $(el);
+				values.push(el.data('value'));
+				titles.push(el.html());
+			});
+		}
+		else {
+			opts.removeClass(options.optionSelectedClass);
+			$this.addClass(options.optionSelectedClass);
+			values.push($this.data('value'));
+			titles.push($this.html());
+		}
+
+		selection.html(options.format(titles, values));
+		inputs.each(function() { $(this).remove(); });
+		inputs = $();
+		for (var i in values) {
+			if (values[i]) inputs.push(options.input(wrapper, select).val(values[i]));
+		}
+
+		if (multiple) {
+			if (inputs.length > 0) selectedOpts.each(function(i, opt) {
+				opt = $(opt);
+				if (!opt.data('value')) {
+					opt.removeClass(options.optionSelectedClass);
+					return false;
+				}
+			});
+			else opts.each(function(i, opt) {
+				opt = $(opt);
+				if (!opt.data('value')) {
+					multiple = false;
+					opt.click();
+					multiple = true;
+					return false;
+				}
+			});
+		}
+	});
+
+	selectedOpts.each(function(i, el) { $(el).click(); });
+
+	wrapper.on('click', function(e) {
+		if (wrapper.hasClass(options.showClass)) {
+			$doc.off('click', closeAll);
+			wrapper.removeClass(options.showClass);
+		}
+		else {
+			closeAll();
+			setTimeout(function() {
+				e.stopPropagation();
+				$doc.on('click', closeAll);
+				wrapper.addClass(options.showClass);
+			});
+		}
+	});
+
+	select.replaceWith(wrapper.addClass(select.attr('class')));
+
+	this.el = el;
+	this.wrapper = wrapper;
+	this.selection = selection;
+	this.optionList = optionList;
+	this.options = options;
+	this.items = opts;
+	return this;
+}
+
+Dropdown.prototype.close = function() {
+	this.wrapper.removeClass(this.options.showClass);
+}
+
 function plugin(options) {
 	options = $.extend({}, defaults, options);
 
-	this.each(function(i, el) {
-		el = $(el);
-
-		var inputs = [el.find(options.inputLeft), el.find(options.inputRight)],
-			container = value(options.domSlider, [options.containerClass, el]),
-			controls = value(options.domControls, [options.controlLeftClass, options.controlRightClass, el]),
-			controlsCSS = [{}, {}],
-			between = value(options.domBetween, [options.betweenClass, el]),
-			betweenCSS = {},
-			step = parseFloat(value(options.step, [el, inputs])),
-			min = parseFloat(value(options.min, [el, inputs])),
-			max = parseFloat(value(options.max, [el, inputs])),
-			fixed = [value(options.leftFixed, [inputs[0]]), value(options.rightFixed, [inputs[1]])],
-			values = options.values,
-			sliderWidth, stepWidth, lastChanged = -1;
-
-		function updateWidth() {
-			sliderWidth = container.width();
-			stepWidth = step * sliderWidth / (max - min);
-		}
-
-		function getValue(i) { return parseFloat(inputs[i].val()); }
-
-		function getX(e) { return e.pageX ||
-			e.originalEvent.changedTouches && e.originalEvent.changedTouches[0].pageX || 0; }
-
-		function adjustBetween() {
-			var left = getValue(0),
-				right = getValue(1);
-
-			if (left > right)
-				return lastChanged > 0 ? inputs[0].val(right).change() : inputs[1].val(left).change();
-
-			betweenCSS = {
-				left: controlsCSS[0].left,
-				width: controlsCSS[1].left - controlsCSS[0].left
-			};
-			between.css(betweenCSS);
-		}
-
-		function inputChanged(i) {
-			var input = inputs[i],
-				control = controls[i];
-			return function(e) {
-				var val = getValue(i);
-				if (!isFinite(val)) return;
-
-				if (val >= max) controlsCSS[i].left = sliderWidth;
-				else if (val <= min) controlsCSS[i].left = 0;
-				else controlsCSS[i].left = ((val - min) / (max - min)) * sliderWidth;
-
-				control.css(controlsCSS[i]);
-
-				lastChanged = i;
-
-				adjustBetween();
-			}
-		}
-
-		function startDrag(i) {
-			var input = inputs[i],
-				control = controls[i],
-				fix = fixed[i];
-
-			return function(e) {
-				e.preventDefault();
-				e.stopPropagation();
-				if (fix) return;
-
-				container.addClass(options.movingClass);
-				function moving(e) {
-					e.preventDefault();
-					var dirty = getX(e) - container.offset().left;
-
-					if ((dirty - stepWidth / 2) < 0) return input.val(min).change();
-					if ((dirty + stepWidth / 2) > sliderWidth) return input.val(max).change();
-					input.val(Math.round(dirty / stepWidth) * step + min).change();
-				}
-
-				function stop(e) {
-					e.preventDefault();
-					$doc.off('mousemove touchmove', moving);
-					$doc.off('mouseup touchend', stop);
-					container.removeClass(options.movingClass);
-				}
-
-				$doc.on('mousemove touchmove', moving);
-				$doc.on('mouseup touchend', stop);
-			}
-		}
-
-		el
-			.append(
-				container
-					.append(controls[0])
-					.append(between)
-					.append(controls[1])
-			);
-
-		if (fixed[0]) controls[0].addClass(options.fixedClass);
-		if (fixed[1]) controls[1].addClass(options.fixedClass);
-		if (!inputs[0].val()) inputs[0].val(min);
-		if (!inputs[1].val()) inputs[1].val(max);
-
-		updateWidth();
-
-		container.on('click', function(e) {
-			e.preventDefault();
-
-			var pos = getX(e) - container.offset().left,
-				leftCtrlPos = betweenCSS.left,
-				rightCtrlPos = leftCtrlPos + betweenCSS.width,
-				nearest = pos < leftCtrlPos + (rightCtrlPos - leftCtrlPos) / 2 ? inputs[0] : inputs[1];
-
-			if ((pos - stepWidth / 2) < 0) return nearest.val(min).change();
-			if ((pos + stepWidth / 2) > sliderWidth) return nearest.val(max).change();
-			nearest.val(Math.round(pos / stepWidth) * step + min).change();
-		});
-
-		inputs[1].on('change keyup', inputChanged(1)).change();
-		inputs[0].on('change keyup', inputChanged(0)).change();
-
-		controls[1].on('mousedown touchstart', startDrag(1)).on('click', function(e) { e.stopPropagation(); e.preventDefault(); });
-		controls[0].on('mousedown touchstart', startDrag(0)).on('click', function(e) { e.stopPropagation(); e.preventDefault(); });
-
-		el.addClass(options.processedClass);
-	});
+	this.each(function(i, el) { dropdowns.push(new Dropdown(el, options)); });
 
 	return this;
 }
 
 $.fn[pluginName] = plugin;
 $.fn[pluginName].defaults = defaults;
+$.fn[pluginName].closeAll = closeAll;
