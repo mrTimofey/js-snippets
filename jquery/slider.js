@@ -1,7 +1,3 @@
-/**
- * jQuery slider
- */
-
 var $ = window.jQuery,
 	pluginName = 'slider',
 	defaults = {
@@ -23,7 +19,7 @@ var $ = window.jQuery,
 
 		pagerEnabled: true,
 		pagerContainer: function(cl, el) { return $('<div></div>').addClass(cl).appendTo(el); },
-		pagerItem: function(i, cl, el) { return $('<i></i>').addClass(cl).html(i + 1); },
+		pagerItem: function(i, cl, item, el) { return $('<i></i>').addClass(cl).html(i + 1); },
 		// from options.currentClass by default
 		pagerCurrentClass: false,
 		pagerContainerClass: 'slider-pager',
@@ -147,7 +143,7 @@ function plugin(options) {
 			pagerContainer = value(options.pagerContainer, [options.pagerContainerClass, el]);
 			pagerItems = [];
 			for (var i = 0; i < slides.length; ++i) {
-				pagerItems.push(options.pagerItem(i, options.pagerItemClass, el));
+				pagerItems.push(options.pagerItem(i, options.pagerItemClass, slides.eq(i), el));
 				pagerItems[i].click(pageClick);
 				pagerContainer.append(pagerItems[i]);
 			}
