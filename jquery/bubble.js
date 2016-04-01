@@ -70,8 +70,10 @@ function plugin(options) {
 
 		function showBubble() {
 			if (!bubble) initBubble();
-			setPosition();
-			bubble.removeClass(options.hiddenClass);
+			setTimeout(function() {
+				bubble.removeClass(options.hiddenClass);
+				setPosition();
+			});
 		}
 
 		function hideBubble() {
