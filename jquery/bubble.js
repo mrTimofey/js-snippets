@@ -36,6 +36,7 @@ var $ = window.jQuery,
 		hiddenClass: 'hidden',
 		// bubble floats near the element itself, but you can rewrite it to anything else
 		element: false,
+		enabled: true
 	},
 	$win = $(window);
 
@@ -69,6 +70,7 @@ function plugin(options) {
 		}
 
 		function showBubble() {
+			if (!value(options.enabled, [el])) return;
 			if (!bubble) initBubble();
 			setTimeout(function() {
 				bubble.removeClass(options.hiddenClass);
@@ -77,6 +79,7 @@ function plugin(options) {
 		}
 
 		function hideBubble() {
+			if (!value(options.enabled, [el])) return;
 			if (!mouseOnBubble && !mouseOnEl)
 				if (options.destroy) {
 					bubble.remove();
