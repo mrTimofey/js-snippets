@@ -21,8 +21,8 @@ var $ = window.jQuery,
 			var option = $('<li></li>').addClass(cl).html(text);
 			if (!value) option.addClass(emptyCl);
 			return option; },
-		input: function(wrapper, el) {
-			return $('<input />').attr('type', 'hidden').attr('name', el.attr('name')).appendTo(wrapper); },
+		input: function(wrapper, name) {
+			return $('<input />').attr('type', 'hidden').attr('name', name).appendTo(wrapper); },
 		format: function(titles, values) {
 			var notEmpty = [];
 			if (values.length > 1) {
@@ -69,7 +69,8 @@ function Dropdown(el, options) {
 		multiple = select.prop('multiple'),
 		selectedOpts = $(),
 		opts = $(),
-		inputs = $();
+		inputs = $(),
+		name = select.attr('name');
 
 	(function() {
 		var groups = select.children('optgroup');
@@ -130,7 +131,7 @@ function Dropdown(el, options) {
 		inputs.each(function() { $(this).remove(); });
 		inputs = $();
 		for (var i in values) {
-			if (values[i]) inputs.push(options.input(wrapper, select).val(values[i]));
+			if (values[i]) inputs.push(options.input(wrapper, name).val(values[i]).change());
 		}
 
 		if (multiple) {
@@ -151,6 +152,8 @@ function Dropdown(el, options) {
 				}
 			});
 		}
+
+		if (!inputs.length) inputs.push(options.input(wrapper, name).val('').change());
 	});
 
 	selectedOpts.each(function(i, el) { $(el).click(); });
