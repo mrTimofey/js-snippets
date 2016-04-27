@@ -23,7 +23,7 @@ var $ = window.jQuery,
 			return option; },
 		input: function(wrapper, name) {
 			return $('<input />').attr('type', 'hidden').attr('name', name).appendTo(wrapper); },
-		format: function(titles, values) {
+		format: function(titles, values, options) {
 			var notEmpty = [];
 			if (values.length > 1) {
 				for (var i in values) if (values[i]) notEmpty.push(titles[i]);
@@ -127,7 +127,7 @@ function Dropdown(el, options) {
 			titles.push($this.html());
 		}
 
-		selection.html(options.format(titles, values));
+		selection.html(options.format(titles, values, selectedOpts));
 		inputs.each(function() { $(this).remove(); });
 		inputs = $();
 		for (var i in values) {
