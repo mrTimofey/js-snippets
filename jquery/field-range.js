@@ -177,6 +177,14 @@ function plugin(options) {
 		controls[0].on('mousedown touchstart', startDrag(0)).on('click', function(e) { e.stopPropagation(); e.preventDefault(); });
 
 		el.addClass(options.processedClass);
+		$(window).resize(function() {
+			setTimeout(function() {
+				updateWidth();
+				inputs[0].change();
+				inputs[1].change();
+				adjustBetween();
+			});
+		});
 	});
 
 	return this;
