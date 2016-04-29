@@ -180,8 +180,8 @@ function plugin(options) {
 		$(window).resize(function() {
 			setTimeout(function() {
 				updateWidth();
-				inputs[0].change();
-				inputs[1].change();
+				inputChanged(0)();
+				inputChanged(1)();
 				adjustBetween();
 			});
 		});
