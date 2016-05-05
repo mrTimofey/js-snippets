@@ -1,0 +1,15 @@
+font-icons($icons, $prefix = i, $family = Icons)
+	$selector-contains = '[class*=" ' + $prefix + '-"]'
+	$selector-starts = '[class^="' + $prefix + '-"]'
+	{$selector-contains}, {$selector-starts}, .{$prefix}
+		display inline-block
+		vertical-align top
+		position relative
+		font-family $family !important
+		font-style normal !important
+		font-weight normal !important
+		text-transform none !important
+		text-decoration none !important
+	for k, v in $icons
+		.{$prefix + '-' + k}:before
+			content v
