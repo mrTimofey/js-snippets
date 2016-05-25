@@ -72,9 +72,10 @@ function Dropdown(el, settings) {
 	function updateSelection() {
 		var values = [],
 			titles = [],
-			selectedOptions = [];
+			selectedOptions = [],
+			i;
 
-		for (var i = 0; i < options.length; ++i) {
+		for (i = 0; i < options.length; ++i) {
 			if (options[i]._option.selected) {
 				$(options[i]).addClass(settings.optionSelectedClass);
 				selectedOptions.push(options[i]);
@@ -103,7 +104,6 @@ function Dropdown(el, settings) {
 		}
 
 		updateSelection();
-		console.log(select.parents('form').serializeArray()[0]);
 	}
 
 	(function() {
@@ -137,7 +137,18 @@ function Dropdown(el, settings) {
 		});
 	})();
 
-	updateSelection();
+
+	if (!multiple) {
+		var selectedIndex = 0;
+		for (var i = 0; i < options.length; ++i) {
+			if (options[i]._option.selected) {
+				selectedIndex = i;
+				break;
+			}
+		}
+
+		$(options[selectedIndex]).click();
+	}
 
 	wrapper.on('click', function(e) {
 		if (wrapper.hasClass(settings.showClass)) {
