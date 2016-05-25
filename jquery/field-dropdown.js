@@ -11,9 +11,9 @@ var $ = window.jQuery,
 			return wrapper; },
 		selection: function(cl, wrapper) {
 			return $('<div></div>').addClass(cl).appendTo(wrapper); },
-		optionList: function(cl, wrapper) {
+		optionList: function(cl, wrapper, isGroup, selectOrOptgroup) {
 			return $('<ul></ul>').addClass(cl).appendTo(wrapper); },
-		optionGroup: function(cl) {
+		optionGroup: function(cl, select) {
 			return $('<li></li>').addClass(cl); },
 		optionGroupLabel: function(cl, text) {
 			return $('<span></span>').addClass(cl).html(text); },
@@ -21,8 +21,6 @@ var $ = window.jQuery,
 			var option = $('<li></li>').addClass(cl).html(text);
 			if (!value) option.addClass(emptyCl);
 			return option; },
-		input: function(wrapper, name) {
-			return $('<input />').attr('type', 'hidden').attr('name', name).appendTo(wrapper); },
 		format: function(titles, values, options) {
 			var notEmpty = [];
 			if (values.length > 1) {
@@ -60,40 +58,75 @@ function closeAll() {
 	$doc.off('click', closeAll);
 }
 
-function Dropdown(el, options) {
-	select = $(el);
-
-	var wrapper = value(options.wrapper, [options.wrapperClass, options.multipleClass, select]),
-		selection = value(options.selection, [options.selectionClass, wrapper, select]),
-		optionList = value(options.optionList, [options.optionListClass, wrapper, select]),
+function Dropdown(el, settings) {
+	var select = $(el),
+	// dropdown wrapper element
+		wrapper = value(settings.wrapper, [settings.wrapperClass, settings.multipleClass, select]),
+	// dropdown selected value(s) element
+		selection = value(settings.selection, [settings.selectionClass, wrapper, select]),
+	// ropdown options list element
+		optionList = value(settings.optionList, [settings.optionListClass, wrapper, false, select]),
 		multiple = select.prop('multiple'),
-		selectedOpts = $(),
-		opts = $(),
-		inputs = $(),
-		name = select.attr('name');
+		options = [];
+
+	function updateSelection() {
+		var values = [],
+			titles = [],
+			selectedOptions = [];
+
+		for (var i = 0; i < options.length; ++i) {
+			if (options[i]._option.selected) {
+				$(options[i]).addClass(settings.optionSelectedClass);
+				selectedOptions.push(options[i]);
+				titles.push(options[i]._option.innerHTML);
+				values.push(options[i]._option.value);
+			}
+			else $(options[i]).removeClass(settings.optionSelectedClass);
+		}
+
+		selection.html(settings.format(titles, values, selectedOptions));
+	}
+
+	function onOptionClick(e) {
+		e.preventDefault();
+
+		// do not close dropdown menu if multiple
+		if (multiple) e.stopPropagation();
+
+		var $this = $(this);
+
+		if (multiple && this._option.selected) {
+			this._option.selected = false;
+		}
+		else {
+			this._option.selected = true;
+		}
+
+		updateSelection();
+		console.log(select.parents('form').serializeArray()[0]);
+	}
 
 	(function() {
 		var groups = select.children('optgroup');
 
-		function createOption(i, el, list) {
-			el = $(el);
-			var val = el.val(),
-				opt = options.option(options.optionClass, options.optionEmptyClass, el.html(), val, i, select)
-					.data('value', val);
+		function createOption(i, option, list) {
+			var opt = settings.option(settings.optionClass, settings.optionEmptyClass, option.innerHTML, option.value, i, select);
+			option._ddOption = opt;
+			opt[0]._option = option;
 			list.append(opt);
-			opts.push(opt[0]);
-			if (el.prop('selected')) selectedOpts.push(opt[0]);
+			opt.click(onOptionClick);
+			options.push(opt[0]);
 		}
 
 		if (groups.length) {
 			groups.each(function(i, el) {
 				el = $(el);
-				var group = options.optionGroup(options.optionGroupClass, select),
-					list = options.optionList(options.optionListClass, select);
-				group.append(options.optionGroupLabel(options.optionGroupLabelClass, el.attr('label'), select));
+				var group = settings.optionGroup(settings.optionGroupClass, select),
+					list = value(settings.optionList, [settings.optionListClass, wrapper, true, el]);
+				group.append(settings.optionGroupLabel(settings.optionGroupLabelClass, el.attr('label'), select));
 				group.append(list);
 				optionList.append(group);
-				el.find('option').each(function(i, el) {
+				el.children('option').each(function(i, el) {
 					createOption(i, el, list);
 				});
 			});
@@ -104,96 +137,43 @@ function Dropdown(el, options) {
 		});
 	})();
 
-	opts.click(function(e) {
-		e.preventDefault();
-		if (multiple) e.stopPropagation();
-		var $this = $(this),
-			values = [],
-			titles = [];
-
-		if (multiple) {
-			$this.toggleClass(options.optionSelectedClass);
-			selectedOpts = opts.filter('.' + options.optionSelectedClass);
-			selectedOpts.each(function(i, el) {
-				el = $(el);
-				values.push(el.data('value'));
-				titles.push(el.html());
-			});
-		}
-		else {
-			opts.removeClass(options.optionSelectedClass);
-			$this.addClass(options.optionSelectedClass);
-			values.push($this.data('value'));
-			titles.push($this.html());
-		}
-
-		selection.html(options.format(titles, values, selectedOpts));
-		inputs.each(function() { $(this).remove(); });
-		inputs = $();
-		for (var i in values) {
-			if (values[i]) inputs.push(options.input(wrapper, name).val(values[i]).change());
-		}
-
-		if (multiple) {
-			if (inputs.length > 0) selectedOpts.each(function(i, opt) {
-				opt = $(opt);
-				if (!opt.data('value')) {
-					opt.removeClass(options.optionSelectedClass);
-					return false;
-				}
-			});
-			else opts.each(function(i, opt) {
-				opt = $(opt);
-				if (!opt.data('value')) {
-					multiple = false;
-					opt.click();
-					multiple = true;
-					return false;
-				}
-			});
-		}
-
-		if (!inputs.length) inputs.push(options.input(wrapper, name).val('').change());
-	});
-
-	selectedOpts.each(function(i, el) { $(el).click(); });
+	updateSelection();
 
 	wrapper.on('click', function(e) {
-		if (wrapper.hasClass(options.showClass)) {
+		if (wrapper.hasClass(settings.showClass)) {
 			$doc.off('click', closeAll);
-			wrapper.removeClass(options.showClass);
+			wrapper.removeClass(settings.showClass);
 		}
 		else {
 			closeAll();
 			setTimeout(function() {
 				e.stopPropagation();
 				$doc.on('click', closeAll);
-				wrapper.addClass(options.showClass);
+				wrapper.addClass(settings.showClass);
 			});
 		}
 	});
 
-	select.replaceWith(wrapper.addClass(select.attr('class')));
+	wrapper.addClass(select.attr('class')).insertAfter(select);
+	select.css('display', 'none');
+	wrapper.append(select);
 
-	this.el = el;
+	this.select = el;
 	this.wrapper = wrapper;
 	this.selection = selection;
 	this.optionList = optionList;
-	this.options = options;
-	this.items = opts;
+	this.settings = settings;
+	this.items = options;
 	return this;
 }
 
 Dropdown.prototype.close = function() {
-	this.wrapper.removeClass(this.options.showClass);
+	this.wrapper.removeClass(this.settings.showClass);
 }
 
 function plugin(options) {
 	options = $.extend({}, defaults, options);
-
-	this.each(function(i, el) { dropdowns.push(new Dropdown(el, options)); });
-
-	return this;
+	return this.each(function(i, el) { dropdowns.push(new Dropdown(el, options)); });
 }
 
 $.fn[pluginName] = plugin;
