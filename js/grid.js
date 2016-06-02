@@ -53,6 +53,7 @@ export default function(colCount, col, gap) {
 			'background:cyan;';
 
 	btn.setAttribute('style', btnStyle);
+	btn.setAttribute('title', 'Ctrl + ;');
 	grid.setAttribute('style', gridStyle);
 	grid.style.width = colCount * col + (colCount + 1) * gap + 'px';
 	btn.innerHTML = '#';
@@ -83,10 +84,15 @@ export default function(colCount, col, gap) {
 		grid.appendChild(line);
 	}
 
-	btn.addEventListener('click', function() {
+	function toggle(e) {
 		grid.style.display = grid.style.display === 'none' ? 'block' : 'none';
 		window.localStorage.setItem('__grid__', grid.style.display);
-	});
+	}
+
+	btn.addEventListener('click', e => { e.preventDefault(); toggle(); });
+
+	// ctrl + ;
+	window.addEventListener('keyup', e => { if (e.ctrlKey && e.keyCode == 186) toggle(); });
 
 	let d = window.localStorage.getItem('__grid__');
 	if (d) grid.style.display = d;
