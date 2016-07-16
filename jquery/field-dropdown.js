@@ -34,6 +34,7 @@ var $ = window.jQuery,
 		optionSelectedClass: 'selected',
 
 		wrapperClass: 'dd-box',
+		emptyClass: 'dd-empty',
 		multipleClass: 'dd-multiple',
 		selectionClass: 'dd-selection',
 		optionListClass: 'dd-option-list',
@@ -85,6 +86,7 @@ function Dropdown(el, settings) {
 			else $(options[i]).removeClass(settings.optionSelectedClass);
 		}
 
+		wrapper.toggleClass(settings.emptyClass, multiple ? values.length === 0 : !values[0]);
 		selection.html(settings.format(titles, values, selectedOptions));
 	}
 
